@@ -30,3 +30,13 @@ to have the standard 1500 byte MTU, and then monitor the arp table and
 probe new hosts, and delete old host routes when not needed.
 
 This is very alpha, so comments, bug reports and ideas are welcome.
+
+Command for checking MTU of the routes:
+
+	netstat -Wrnfinet
+
+The most surprising thing of running this command is that things will
+have larger MTUs than expected.  Do you have a machine w/ VLANs
+enabled?  Well, on the untagged part, you'll now get an MTU of 1504.
+Some OS's may have larger than 1500, MacOSX 10.10.5's wireless interface
+accepts packets up to 1532 bytes.
