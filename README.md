@@ -31,6 +31,12 @@ probe new hosts, and delete old host routes when not needed.
 
 This is very alpha, so comments, bug reports and ideas are welcome.
 
+Running automtud.sh:
+
+	sh automtud.sh -i <interface>
+
+You can specify more than one -i option to add additional interfaces.
+
 Command for checking MTU of the routes:
 
 	netstat -Wrnfinet

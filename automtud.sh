@@ -89,6 +89,7 @@ BEGIN {
 probeipsize()
 {
 	# -s l results in a packet of l + 8 (ICMP) + 20 (IP) total length
+	# XXX - it'd be nice if -t accepted fractional seconds.
 	ping -r -t 1 -s $(($2 - 8 - 20)) -c 1 "$1" >/dev/null 2>&1 || return 1
 }
 
@@ -167,15 +168,47 @@ setupinterface()
 	mac=$(ifconfig "$1" | awk '$1 == "ether" { print $2 }')
 
 	# get possible routes
+	# XXX - not the best way to get network routes
 	for i in $(netstat -rnfinet | awk '$4 == "'"$1"'" && index($1, "/") != 0 && (substr($2, 1, 4) == "link" || length($2) == 17) { print $1 }'); do
-		echo setting mtu on interface "$1" for network "$i"
+		echo setting normal mtu on interface "$1" for network "$i"
 		route change "$i" -interface "$1" -mtu "$normal_mtu"
 	done
 }
 
+usage()
+{
+	echo "Usage: $0 -i <interface> ..."
+}
+
 # XXX - params
-interfaces="em0"
+interfaces=""
 normal_mtu="1500"
+
+while getopts i: opt; do
+	case "$opt" in
+	i)
+		xint="${OPTARG%%[^a-zA-Z0-9.]*}"
+		if [ x"$xint" != x"$OPTARG" ]; then
+			echo Invalid interface name: "$OPTARG"
+			exit 2
+		fi
+
+		if [ -z "$interfaces" ]; then
+			interfaces="$OPTARG"
+		else
+			interfaces="$interfaces|$OPTARG"
+		fi
+		;;
+	'?')
+		usage
+		exit 3
+	esac
+done
+
+if [ -z "$interfaces" ]; then
+	echo No interfaces specified.
+	exit 1
+fi
 
 for i in $(echo "$interfaces" | sed -e 's/|/\
 /g'); do
