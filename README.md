@@ -18,3 +18,6 @@ This should also work even if network switches don't support jumbo frame.
 This is because if the switch doesn't support jumbo frames, the packet
 will drop, and it'll just look like the remote side doesn't support that
 sized frames.
+
+This is currently designed to work on FreeBSD.  It has been tested w/
+a late June 2015 -CURRENT and 9.2-R.
