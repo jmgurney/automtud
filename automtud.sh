@@ -177,14 +177,14 @@ setupinterface()
 
 usage()
 {
-	echo "Usage: $0 -i <interface> ..."
+	echo "Usage: $0 [ -m <minmtu> ] -i <interface> ..."
 }
 
 # XXX - params
 interfaces=""
 normal_mtu="1500"
 
-while getopts i: opt; do
+while getopts i:m: opt; do
 	case "$opt" in
 	i)
 		xint="${OPTARG%%[^a-zA-Z0-9.]*}"
@@ -198,6 +198,14 @@ while getopts i: opt; do
 		else
 			interfaces="$interfaces|$OPTARG"
 		fi
+		;;
+	m)
+		xint="${OPTARG%%[^0-9]*}"
+		if [ x"$xint" != x"$OPTARG" ]; then
+			echo "Invalid value for min MTU: $OPTARG"
+			exit 2
+		fi
+		normal_mtu="$OPTARG"
 		;;
 	'?')
 		usage
