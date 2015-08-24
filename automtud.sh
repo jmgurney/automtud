@@ -167,6 +167,30 @@ setupinterface()
 	#update network routes:
 	mac=$(ifconfig "$1" | awk '$1 == "ether" { print $2 }')
 
+	# Find interface's max MTU
+	low=1500
+	probe=32768
+	while :; do
+		if ifconfig "$1" mtu $probe 2>&1 | grep 'set mtu' >/dev/null; then
+			hi=$probe
+		else
+			low=$probe
+		fi
+
+		if [ x"$low" == x"$hi" -o x"$(($low + 1))" == x"$hi" ]; then
+			break
+		fi
+
+		probe=$((($hi - $low) / 2 + $low))
+	done
+
+	if ifconfig "$1" mtu $low 2>&1 | grep 'set mtu' >/dev/null; then
+		echo Failed to set MTU on interface "$1" to $low
+		exit 3
+	fi
+
+	echo Setting MTU on interface "$1" to $low.
+
 	# get possible routes
 	# XXX - not the best way to get network routes
 	for i in $(netstat -rnfinet | awk '$4 == "'"$1"'" && index($1, "/") != 0 && (substr($2, 1, 4) == "link" || length($2) == 17) { print $1 }'); do
@@ -218,12 +242,14 @@ if [ -z "$interfaces" ]; then
 	exit 1
 fi
 
+# Get interfaces ready.
 for i in $(echo "$interfaces" | sed -e 's/|/\
 /g'); do
 	echo setting up: "$i"
 	setupinterface "$i"
 done
 
+# Watch for machines comming and going and adjust as needed.
 detectmachines "$interfaces" | while read mode mach iface; do
 	echo machine "$mach" "$mode" on interface "$iface"
 	if [ x"$mode" = x"add" ]; then

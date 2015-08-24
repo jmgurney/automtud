@@ -22,12 +22,13 @@ sized frames.
 This is currently designed to work on FreeBSD.  It has been tested w/
 a late June 2015 -CURRENT and 9.2-R.
 
-It is expected that you have configured the interface(s) to the maximum
-supported MTU for the interface.  There is no issues with setting it
-larger than the other hosts on the network as the optimum size will be
-figured out.  Once the script is run, it will configure the host routes
-to have the standard 1500 byte MTU, and then monitor the arp table and
-probe new hosts, and delete old host routes when not needed.
+The script will figure out the largest MTU that the interface supports.
+There are no issues with setting it larger than the other hosts on the
+network as the optimum size will be figured out.  Once the script is
+run, it will configure the host routes to have the standard 1500 byte
+MTU, though this can be changed w/ the -m option, and then monitor the
+arp table and probe new hosts, and delete old host routes when not
+needed.
 
 This is very alpha, so comments, bug reports and ideas are welcome.
 
