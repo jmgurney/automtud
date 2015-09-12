@@ -208,7 +208,7 @@ usage()
 interfaces=""
 normal_mtu="1500"
 
-while getopts i:m: opt; do
+while getopts hi:m: opt; do
 	case "$opt" in
 	i)
 		xint="${OPTARG%%[^a-zA-Z0-9.]*}"
@@ -231,7 +231,7 @@ while getopts i:m: opt; do
 		fi
 		normal_mtu="$OPTARG"
 		;;
-	'?')
+	h|'?')
 		usage
 		exit 3
 	esac
