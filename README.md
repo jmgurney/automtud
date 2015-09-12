@@ -47,3 +47,22 @@ have larger MTUs than expected.  Do you have a machine w/ VLANs
 enabled?  Well, on the untagged part, you'll now get an MTU of 1504.
 Some OS's may have larger than 1500, MacOSX 10.10.5's wireless interface
 accepts packets up to 1532 bytes.
+
+Issues
+======
+
+One issue that can happen when using jumbo frames is running out of
+memory.  A number of drivers may use either the zone mbuf_jumbo_9k or
+mbuf_jumbo_16k which uses contiguous physical and virtual address space.
+After the machine has been running a while, physical memory may be
+fragmented enough to prevent a contiguous allocation of memory preventing
+additional mbufs from being allocated.  This can prevent the system from
+working.  This may be required for some drivers which do not support a
+scatter/gather array for the packet, but most modern ethernet hardware
+should fully support this.
+
+Drivers known to use 9k or 16k physically contiguous zones:
+	bce, bge, bxe, cxgb, em, igb, ixgbe, msk, mxge, nfe, nxge, qlxgb,
+	re, sfxge, sk, ti, vtnet, vxge
+
+Drivers known to require the use of a physically contigusous zone:
