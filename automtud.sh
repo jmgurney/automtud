@@ -239,6 +239,7 @@ done
 
 if [ -z "$interfaces" ]; then
 	echo No interfaces specified.
+	usage
 	exit 1
 fi
 
