@@ -168,7 +168,7 @@ setupinterface()
 	mac=$(ifconfig "$1" | awk '$1 == "ether" { print $2 }')
 
 	# Find interface's max MTU
-	low=1500
+	low=576
 	probe=32768
 	while :; do
 		if ifconfig "$1" mtu $probe 2>&1 | grep 'set mtu' >/dev/null; then
