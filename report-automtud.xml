@@ -1,0 +1,48 @@
+<!-- Please send your reports to: monthly@FreeBSD.org -->
+  <project cat='proj'>
+    <title>automtud: Better Jumbo Frame Support</title>
+
+    <!-- Required section -->
+    <contact>
+      <person>
+	<name>
+	  <given>John-Mark</given>
+	  <common>Gurney</common>
+	</name>
+
+	<email>jmg@FreeBSD.org</email>
+      </person>
+    </contact>
+
+    <links>
+      <url href="https://github.com/jmgurney/automtud">jmgurney/automtud on github</url>
+    </links>
+
+    <body>
+	<p>The automtud script will allow a FreeBSD machine to send
+	jumbo frames to machines that support them, while using normal
+	sized frames for other machines.</p>
+
+	<p>There are various advantages to using jumbo frames, such as
+	reduced protocol overhead.  It also means that TCP streams will
+	not be segmented as much (though TSO helps) and in cases where
+	LRO doesn't work well, less packets will be received.</p>
+
+	<p>The script does not currently restore the state of the system
+	it was in before starting.  This means that you'll have to manually
+	change the interface MTU, and manually delete host routes.</p>
+    </body>
+
+    <help>
+      <task>Fix up various ethernet drivers to better support jumbo frames.
+	Most ethernet drivers, though supporting scatter/gather, use a
+	physically contiguous zone which can cause resource shortages.</task>
+
+      <task>More testing is needed to ensure that things behave as
+	expected.  This means that when running the script, all machines
+	work as expected w/o slow down or connectivity issues.  Check
+	`vmstat -z | grep mbuf' to ensure this isn't a problem with running
+	out of jumbo_9k or jumbo_16k buffers do to ethernet driver
+	issue.</task>
+    </help>
+  </project>
