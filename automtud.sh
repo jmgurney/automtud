@@ -52,9 +52,10 @@ function process(oldmac, newmac)
 }
 
 BEGIN {
-	cmd = "arp -a; sleep 1"
+	cmd = "arp -an; sleep 1"
 	for (;;) {
 		res=cmd | getline
+		#system("echo '"'"'" $0 "'"'"' >&2")
 		if (res == 0) {
 			close(cmd)
 			#print "processing" >"/dev/stderr"
@@ -69,7 +70,9 @@ BEGIN {
 			print "error!" >"/dev/stderr"
 			continue
 		}
-		if ($7 == "permanent" || $4 == "(incomplete)" || $6 !~ /'"$interfaces"'/)
+		# broadcast is to support MacOSX
+		# $8 is to support MacOSX
+		if ($4 == "ff:ff:ff:ff:ff:ff" || $4 == "(incomplete)" || $7 == "permanent" || $8 == "permanent" || $6 !~ /'"$interfaces"'/)
 			continue
 
 		newmac[substr($2, 2, length($2) - 2)] = $6
@@ -245,14 +248,17 @@ run_tests()
 
 usage()
 {
-	echo "Usage: $0 [ -m <minmtu> ] -i <interface> ..."
+	echo "Usage: $0 [ -n ] [ -m <minmtu> ] -i <interface> ..."
+	echo ""
+	echo "For more information, see: https://github.com/jmgurney/automtud"
 }
 
 # XXX - params
 interfaces=""
+nosetup="0"
 normal_mtu="1500"
 
-while getopts hi:m:t opt; do
+while getopts hi:m:nt opt; do
 	case "$opt" in
 	i)
 		xint="${OPTARG%%[^a-zA-Z0-9.]*}"
@@ -266,6 +272,9 @@ while getopts hi:m:t opt; do
 		else
 			interfaces="$interfaces|$OPTARG"
 		fi
+		;;
+	n)
+		nosetup=1
 		;;
 	m)
 		xint="${OPTARG%%[^0-9]*}"
@@ -292,11 +301,13 @@ if [ -z "$interfaces" ]; then
 fi
 
 # Get interfaces ready.
-for i in $(echo "$interfaces" | sed -e 's/|/\
-/g'); do
-	echo setting up: "$i"
-	setupinterface "$i"
-done
+if [ x"$nosetup" = x"0" ]; then
+	for i in $(echo "$interfaces" | sed -e 's/|/\
+	/g'); do
+		echo setting up: "$i"
+		setupinterface "$i"
+	done
+fi
 
 # Watch for machines comming and going and adjust as needed.
 detectmachines "$interfaces" | while read mode mach iface; do
