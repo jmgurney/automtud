@@ -48,6 +48,24 @@ enabled?  Well, on the untagged part, you'll now get an MTU of 1504.
 Some OS's may have larger than 1500, MacOSX 10.10.5's wireless interface
 accepts packets up to 1532 bytes.
 
+System Specific Information
+===========================
+
+MacOSX
+------
+
+Setting the network route to the default MTU of 1500 requires the -net
+parameter, for example:
+```
+route change -net 192.168.0 -mtu 1500
+route change -net 169.254 -mtu 1500
+```
+
+Changing the MTU of the interface causes the interface to be reinitalized,
+deleting the network route and reconfigure IP addresses.  Passing the
+`-n` option prevents this allowing the network route change to be kept
+when launching the script.
+
 Issues
 ======
 
