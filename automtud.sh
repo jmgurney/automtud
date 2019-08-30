@@ -93,6 +93,19 @@ probeipsize()
 	ping -r -t 1 -s $(($2 - 8 - 20)) -c 1 "$1" >/dev/null 2>&1 || return 1
 }
 
+findmtu()
+{
+	set -- $(ifconfig "$1" | head -n 1)
+
+	while [ $# -gt 1 ]; do
+		if [ x"$1" = x"mtu" ]; then
+			echo "$2"
+			return
+		fi
+		shift
+	done
+}
+
 probemachine()
 {
 	# Verify machine reachability
@@ -104,7 +117,7 @@ probemachine()
 		return
 	fi
 
-	max=$(ifconfig "$2" | head -n 1 | awk '{print $6}')
+	max=$(findmtu "$2")
 	hi="$max" # highest common/max size goes here
 	commonsizes="1500 1504 9216 9000 1480 1492 4352 4096 1532 576 7422 16114 10240 6144 8132 9022 9184"
 	# XXX - collect real world stats to order these
@@ -199,6 +212,37 @@ setupinterface()
 	done
 }
 
+run_tests()
+{
+	echo Running tests...
+
+	set -e
+	(
+		ifconfig() {
+			echo a b c mtu 283 f
+		}
+
+		v=$(findmtu bogus)
+		if [ "$v" != 283 ]; then
+			echo findmtu failed
+			exit 1
+		fi
+
+		ifconfig() {
+			echo a b c o p mtu 111 f
+		}
+
+		v=$(findmtu bogus)
+		if [ "$v" != 111 ]; then
+			echo findmtu failed
+			exit 1
+		fi
+	)
+
+	echo Completed.
+	return 0
+}
+
 usage()
 {
 	echo "Usage: $0 [ -m <minmtu> ] -i <interface> ..."
@@ -208,7 +252,7 @@ usage()
 interfaces=""
 normal_mtu="1500"
 
-while getopts hi:m: opt; do
+while getopts hi:m:t opt; do
 	case "$opt" in
 	i)
 		xint="${OPTARG%%[^a-zA-Z0-9.]*}"
@@ -230,6 +274,10 @@ while getopts hi:m: opt; do
 			exit 2
 		fi
 		normal_mtu="$OPTARG"
+		;;
+	t)
+		run_tests
+		exit $?
 		;;
 	h|'?')
 		usage
